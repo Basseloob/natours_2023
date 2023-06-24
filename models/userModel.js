@@ -1,3 +1,4 @@
+const crypto = require('crypto'); // is a bultin node module.
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
@@ -42,6 +43,8 @@ const userSchema = new mongoose.Schema({
     message: 'Passwords are not the same!',
   },
   passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date, // as a security measure : the passwordResetToken will expires after cetrtain amount of time.
 });
 
 // The encryption is between getting the data and saving it into the DB :
@@ -53,6 +56,18 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, 12);
   // Seleting the passwordConfirm field  // we are removing it here becasue its required as an input but then we remove it here :
   this.passwordConfirm = undefined;
+
+  next();
+});
+
+userSchema.pre('save', function (next) {
+  // If we didnt modify the password just dont do anything:
+  if (!this.isModified('password') || this.isNew) return next();
+
+  // 1 second in the past will always insure insure that the token is always created after
+  // the pasword has been changed :
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
 });
 
 // input password VS DB saved password :
@@ -86,7 +101,28 @@ userSchema.methods.changedPasswordAfter = function (JWTTimesstamp) {
   return false; // Means :  the user didnt change the password after the token was initiated.
 };
 
-userSchema.methods.createPasswordResetToken = function () {};
+userSchema.methods.createPasswordResetToken = function () {
+  // 1) Creating the reset token :
+  const resetToken = crypto.randomBytes(32).toString('hex'); // This token wich will be sent to the user, which the user can then use to reset the password .
+
+  // 2) encrypting the resetToken to be save into the DB:
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  console.log(
+    'resetToken : ',
+    { resetToken },
+    'this.passwordResetToken the encrypted one: ',
+    this.passwordResetToken
+  );
+
+  // Expiration date for the resetToken :
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken; // Sending by email .
+};
 
 const userModel = mongoose.model('User', userSchema);
 module.exports = userModel;

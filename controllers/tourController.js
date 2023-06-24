@@ -241,15 +241,18 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 exports.deleteTour = catchAsync(async (req, res, next) => {
   // try {
   const deleteTour = await TourModel.findByIdAndDelete(req.params.id);
+  const deletedTour = deleteTour.name;
 
   if (!deleteTour) {
     return next(new AppError('Heeeey No tour found with that ID', 404));
   }
 
+  console.log('Tour deleted successfully');
   res.status(204).json({
     status: 'success',
     data: {
-      deleteTour,
+      // deleteTour,
+      deletedTour,
     },
   });
 

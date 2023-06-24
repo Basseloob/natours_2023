@@ -33,7 +33,7 @@ app.use(express.static(`${__dirname}/public`)); // serving static files --> http
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   console.log('Hello Time of request MiddleWare ', req.requestTime);
-  console.log('req.headers = ', req.headers); // access to http headers with express :
+  // console.log('req.headers = ', req.headers); // access to http headers with express :
   next();
 });
 

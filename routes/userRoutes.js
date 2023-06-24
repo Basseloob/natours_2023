@@ -10,7 +10,7 @@ router.post('/login', authController.login);
 
 // updating the paswords :
 router.post('/forgotPassword', authController.forgotPassword);
-router.post('/forgotPassword', authController.resetPassword);
+router.patch('/resetPassword/:token', authController.resetPassword);
 
 router
   .route('/')
