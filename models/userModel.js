@@ -45,6 +45,12 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date, // as a security measure : the passwordResetToken will expires after cetrtain amount of time.
+  // For knowing the user ahs deleted or not :
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 });
 
 // The encryption is between getting the data and saving it into the DB :
@@ -67,6 +73,12 @@ userSchema.pre('save', function (next) {
   // 1 second in the past will always insure insure that the token is always created after
   // the pasword has been changed :
   this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
+userSchema.pre(/^find/, function (next) {
+  // This points to the current query - only show the active users :
+  this.find({ active: { $ne: false } });
   next();
 });
 

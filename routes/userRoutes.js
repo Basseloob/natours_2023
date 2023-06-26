@@ -12,6 +12,16 @@ router.post('/login', authController.login);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
+router.patch(
+  '/updateMyPassword',
+  // use protect --> only for loggedin users :
+  authController.protect,
+  authController.updatePassword
+);
+
+router.patch('/updateMe', authController.protect, userController.updateMe);
+router.delete('/deleteMe', authController.protect, userController.deleteMe); // We are not actually deleting the user from the DB.
+
 router
   .route('/')
   .get(userController.getAllUsers)

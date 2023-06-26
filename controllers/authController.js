@@ -10,6 +10,9 @@ const sendEmail = require('../utils/email');
 
 const { decode } = require('punycode');
 
+// Functions :
+
+// sotoring token into the JWT environment variable.
 const signToken = (id) => {
   return jwt.sign(
     // { id: newUser._id }, // Here is the data we want store inside the token.
@@ -18,6 +21,12 @@ const signToken = (id) => {
     // options
     { expiresIn: process.env.JWT_EXPIRES_IN }
   );
+};
+
+const createSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+
+  res.status(statusCode).json({ status: 'success', token, data: { user } });
 };
 
 // Create User :
@@ -40,9 +49,10 @@ exports.signup = catchAsync(async (req, res, next) => {
   //     // options
   //     { expiresIn: process.env.JWT_EXPIRES_IN }
   //   );
-  const token = signToken(newUser._id);
 
-  res.status(201).json({ status: 'success', token, data: { user: newUser } });
+  // const token = signToken(newUser._id);
+  // res.status(201).json({ status: 'success', token, data: { user: newUser } });
+  createSendToken(newUser, 201, res);
 });
 
 // Login User :
@@ -68,8 +78,9 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('Incorrect email or password', 401));
   }
   //   3)  If everything is correct send token to client  :
-  const token = signToken(user._id);
-  res.status(200).json({ status: 'success', token });
+  // const token = signToken(user._id);
+  // res.status(200).json({ status: 'success', token });
+  createSendToken(user, 200, res);
 });
 
 // MiddleWare :
@@ -217,6 +228,30 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   // 4) Log the user in, send JWT :
   // If everything is correct send token to client  :
-  const token = signToken(user._id);
-  res.status(200).json({ status: 'success', token });
+  // const token = signToken(user._id);
+  // res.status(200).json({ status: 'success', token });
+  createSendToken(user, 200, res);
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // 1) Get the user from the collection :
+  // This is only for logged in users.
+  const user = await userModel.findById(req.user.id).select('+password');
+
+  // 2) Check if POSTed current user is correct :
+  // comparing the currentPassword with the one stored in the DB :
+  if (!(await user.correctPassword(req.body.passwordCurrnet, user.password))) {
+    return next(AppError('Your current password is wrong.', 401));
+  }
+
+  // 3) IF so, update password : userModel.findandUpdate --> never use it in passwords : and all the middle wares for encrypting the password not going to work :
+  // This is done by a userSchema middleWare
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save(); // without the vlidation stops becasue we want it to happen.
+
+  // 4) Log user in, send JWT :
+  // const token = signToken(user._id);
+  // res.status(200).json({ status: 'success', token });
+  createSendToken(user, 200, res);
 });
