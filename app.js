@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitiz = require('express-mongo-sanitize');
 const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -47,6 +48,20 @@ app.use(mongoSanitiz()); // it will filter out the $ sgins.
 
 // Data sanitization againt XSS query injection :
 app.use(xss()); // prevent injection of malicious HTML code.
+
+// Prevent paramater polution --> Review lesson 146 for more info :
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  })
+);
 
 // Serving static files :
 app.use(express.static(`${__dirname}/public`)); // serving static files --> http://localhost:3000/overview.html

@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const validator = require('validator');
+const userModel = require('./userModel');
+const { promises } = require('nodemailer/lib/xoauth2');
 
 // // 2: Creating Schema.
 const tourSchema = new mongoose.Schema(
@@ -27,7 +29,7 @@ const tourSchema = new mongoose.Schema(
       required: [true, 'Difficulty is required'],
       //data validators :
       enum: {
-        values: ['easy', 'medium', 'defficult'],
+        values: ['easy', 'medium', 'difficult'],
         message: 'Defficulty is either easy, medium or defficult',
       },
     },
@@ -58,7 +60,44 @@ const tourSchema = new mongoose.Schema(
     createdAt: { type: Date, default: Date.now(), select: false },
     startDates: [Date],
     secretTour: { type: Boolean, default: false }, // ture = Secret , false = notsecret.
+    //
+    // Geospatial data from mongoDB :
+    //
+    startLocation: {
+      // GeoJSON
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      descriptioin: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        descriptioin: String,
+        day: Number, // The day of the tour will the people will go to.
+      },
+    ],
+    //
+    // Embedding :
+    //
+    // guides: Array,
+    ////////////////////////////
+    //
+    // Refrencing :
+    //
+    guides: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
   },
+
   // 2) The Options :
   {
     toJSON: { virtuals: true },
@@ -79,6 +118,17 @@ tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+
+// // // For Embedding :
+// tourSchema.pre('save', async function (next) {
+//   // Looping through guides array :
+//   const guidesPromises = this.guides.map(
+//     async (id) => await userModel.findById(id)
+//   );
+//   this.guides = await Promise.all(guidesPromises);
+
+//   next();
+// });
 
 // tourSchema.pre('save', function (next) {
 //   console.log('Will save document...');

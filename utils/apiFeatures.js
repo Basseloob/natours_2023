@@ -30,6 +30,8 @@ class APIFeatures {
   sort() {
     // 3 ) Sorting :
     if (this.queryString.sort) {
+      console.log(this.queryString.sort); //( {{URL}}api/v1/tours?sort=duration&sort=price) --> it will create an array and the split is used for the strings no the array , so we are using (const hpp = require('hpp') :
+
       const sortBy = this.queryString.sort.split(',').join(' ');
       console.log('sortBy = ', sortBy);
       this.query = this.query.sort(sortBy);
