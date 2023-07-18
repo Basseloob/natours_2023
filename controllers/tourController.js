@@ -87,6 +87,8 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     .limitFields()
     .paginate();
   // const tours = await query;
+  console.log('req.query =  ', req.query);
+
   const tours = await features.query;
   // console.log('req.query : ', req.query, 'queryObj : ', queryObj);
 
@@ -123,6 +125,10 @@ exports.getTour = catchAsync(async (req, res, next) => {
   // TourModel.findOne({ id_: req.params.id });
   // 2
   const getThisOneTour = await TourModel.findById(req.params.id); // The id in the search part.
+  // const getThisOneTour = await TourModel.findById(req.params.id).populate({
+  //   path: 'guides',
+  //   select: '-__v -passwordChangedAt', // Getting rid of the unwanted data.
+  // });
 
   if (!getThisOneTour) {
     return next(new AppError('Heeeey No tour found with that ID', 404));

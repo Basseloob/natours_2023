@@ -88,13 +88,11 @@ const tourSchema = new mongoose.Schema(
       },
     ],
     //
-    // Embedding :
+    // Embedding :::::::::::::::::
     //
     // guides: Array,
     ////////////////////////////
-    //
-    // Refrencing :
-    //
+    // Refrencing :::::::::::::::::
     guides: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
   },
 
@@ -119,7 +117,7 @@ tourSchema.pre('save', function (next) {
   next();
 });
 
-// // // For Embedding :
+// // // For Embedding : adding and showing the tour guides when adding a new tour from POSTMAN.
 // tourSchema.pre('save', async function (next) {
 //   // Looping through guides array :
 //   const guidesPromises = this.guides.map(
@@ -135,10 +133,10 @@ tourSchema.pre('save', function (next) {
 //   next();
 // });
 
-// tourSchema.post('save', function (theSavedDocIntoDB, next) {
-//   console.log('theSavedDocIntoDB = ', theSavedDocIntoDB);
-//   next();
-// });
+tourSchema.post('save', function (theSavedDocIntoDB, next) {
+  console.log('theSavedDocIntoDB = ', theSavedDocIntoDB);
+  next();
+});
 
 // QUERY MIDDLEWARE : runs before or after query is exceuted .
 tourSchema.pre(/^find/, function (next) {
@@ -147,6 +145,17 @@ tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
 
   this.start = Date.now();
+
+  next();
+});
+
+// populate :
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    // this. always points to the current query.
+    path: 'guides',
+    select: '-__v -passwordChangedAt', // Getting rid of the unwanted data.
+  });
 
   next();
 });
