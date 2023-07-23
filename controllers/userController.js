@@ -3,6 +3,7 @@ const userModel = require('../models/userModel');
 const APIFeatures = require('../utils/apiFeatures');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const factory = require('./handlerFactory');
 
 const filterObj = (obj, ...allowedFields) => {
   // 1) loop through the fileds that is in the Obj :
@@ -21,19 +22,25 @@ const readAllUsers = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/users.json`)
 );
 
-exports.getAllUsers = catchAsync(async (req, res) => {
-  const users = await userModel.find();
-  // console.log('req.query : ', req.query, 'queryObj : ', queryObj);
+// exports.getAllUsers = catchAsync(async (req, res) => {
+//   const users = await userModel.find();
+//   // console.log('req.query : ', req.query, 'queryObj : ', queryObj);
 
-  res.status(200).json({
-    status: 'success',
+//   res.status(200).json({
+//     status: 'success',
 
-    results: users.length,
-    data: {
-      users,
-    },
-  });
-});
+//     results: users.length,
+//     data: {
+//       users,
+//     },
+//   });
+// });
+exports.getAllUsers = factory.getAll(userModel);
+
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id; // will be getting it from --> authController.protect the logged in user.
+  next();
+};
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   // 1) Create error if user POSTs password data :
@@ -77,78 +84,86 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUser = (req, res) => {
-  console.log(req.params);
+// exports.getUser = (req, res) => {
+//   console.log(req.params);
 
-  const id = req.params.id * 1;
-  const findUserId = readAllUsers.find((el) => el.id === id);
+//   const id = req.params.id * 1;
+//   const findUserId = readAllUsers.find((el) => el.id === id);
 
-  //   if (id > readAllUsers.length) {
-  //   if (!findUserId) {
-  //     return res.status(404).json({
-  //       status: 'fail',
-  //       message: 'Invalid ID:',
-  //     });
-  //   }
+//   //   if (id > readAllUsers.length) {
+//   //   if (!findUserId) {
+//   //     return res.status(404).json({
+//   //       status: 'fail',
+//   //       message: 'Invalid ID:',
+//   //     });
+//   //   }
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      findUserId,
-    },
-  });
-};
+//   res.status(200).json({
+//     status: 'success',
+//     data: {
+//       findUserId,
+//     },
+//   });
+// };
+exports.getUser = factory.getOne(userModel);
 
 // exports.getUserByName = (req, res) { }
 
 exports.createUser = (req, res) => {
   console.log(req.body);
 
-  const newId = readAllUsers[readAllUsers.length - 1].id + 1;
-  const newUser = Object.assign({ id: newId }, req.body);
-  readAllUsers.push(newUser);
+  // const newId = readAllUsers[readAllUsers.length - 1].id + 1;
+  // const newUser = Object.assign({ id: newId }, req.body);
+  // readAllUsers.push(newUser);
 
-  fs.writeFile(
-    `${__dirname}/dev-data/data/users.json`,
-    JSON.stringify(readAllUsers),
-    (err) => {
-      res.status(201).json({
-        status: 'success',
-        data: {
-          readAllUsers: newUser,
-        },
-      });
-    }
-  );
-  //   res.send('Done.');
-};
-
-exports.updateUser = (req, res) => {
-  //   if (req.params.id * 1 > readAllUsers.length) {
-  //     return res.status(404).json({
-  //       status: 'fail',
-  //       message: 'Invalid ID:',
+  // fs.writeFile(
+  //   `${__dirname}/dev-data/data/users.json`,
+  //   JSON.stringify(readAllUsers),
+  //   (err) => {
+  //     res.status(201).json({
+  //       status: 'success',
+  //       data: {
+  //         readAllUsers: newUser,
+  //       },
   //     });
   //   }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      readAllUsers: '<updated tour here...>',
-    },
+  // );
+  // //   res.send('Done.');
+  res.status(500).json({
+    status: 'error',
+    message: 'This route is not defined! Please use / Signup insted.',
   });
 };
 
-exports.deleteUser = (req, res) => {
-  if (req.params.id * 1 > readAllUsers.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID:',
-    });
-  }
+// exports.updateUser = (req, res) => {
+//   //   if (req.params.id * 1 > readAllUsers.length) {
+//   //     return res.status(404).json({
+//   //       status: 'fail',
+//   //       message: 'Invalid ID:',
+//   //     });
+//   //   }
 
-  res.status(204).json({
-    status: 'success',
-    data: null,
-  });
-};
+//   res.status(200).json({
+//     status: 'success',
+//     data: {
+//       readAllUsers: '<updated tour here...>',
+//     },
+//   });
+// };
+// Do Not update passwords with this!
+exports.updateUser = factory.updateOne(userModel);
+
+// exports.deleteUser = (req, res) => {
+//   if (req.params.id * 1 > readAllUsers.length) {
+//     return res.status(404).json({
+//       status: 'fail',
+//       message: 'Invalid ID:',
+//     });
+//   }
+
+//   res.status(204).json({
+//     status: 'success',
+//     data: null,
+//   });
+// };
+exports.deleteUser = factory.deleteOne(userModel);

@@ -94,6 +94,7 @@ const tourSchema = new mongoose.Schema(
     ////////////////////////////
     // Refrencing :::::::::::::::::
     guides: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
+    // reviews: [{ type: mongoose.Schema.ObjectId, ref: 'Review' }], // we did virtual poulate insted of this ref...
   },
 
   // 2) The Options :
@@ -108,6 +109,13 @@ tourSchema.virtual('durationWeek').get(function () {
   // arrow function dont get its this. keyword.
   // get() -> it will be created each time we get some data from the DB.
   return this.duration / 7; // calculating the week.
+});
+
+// virtual populate : only populate in getOneTour :
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour', // This is what it called in in the reviewsModel
+  localField: '_id', // This is what it called in the current model.
 });
 
 // DOCUMENT MIDDLEWARE : // run before .save() and .create() ONLY.

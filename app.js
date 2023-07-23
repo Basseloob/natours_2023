@@ -14,6 +14,7 @@ const globalErrorHandler = require('./controllers/errorController');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewsRoute');
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // 1) Global Middle Ware :
@@ -99,6 +100,7 @@ app.use((req, res, next) => {
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 // Error route handler :
 

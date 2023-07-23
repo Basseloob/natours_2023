@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
   },
   passwordConfirm: {
     type: String,
-    required: [true, 'Please confirm your password'],
+    // required: [true, 'Please confirm your password'],
     // To use our cutome validator :
     // No arrow function because we want to use (this.) keyword.
     validate: function (el) {
@@ -53,18 +53,22 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// The encryption is between getting the data and saving it into the DB :
-userSchema.pre('save', async function (next) {
-  // Only run this function if password was actually modified :
-  if (!this.isModified('password')) return next();
+////////////////////////////////
+/// password Encrytpion :
+////////////////////////////////
 
-  // Encrypting the password with cost of 12 :
-  this.password = await bcrypt.hash(this.password, 12);
-  // Seleting the passwordConfirm field  // we are removing it here becasue its required as an input but then we remove it here :
-  this.passwordConfirm = undefined;
+// // The encryption is between getting the data and saving it into the DB :
+// userSchema.pre('save', async function (next) {
+//   // Only run this function if password was actually modified :
+//   if (!this.isModified('password')) return next();
 
-  next();
-});
+//   // Encrypting the password with cost of 12 :
+//   this.password = await bcrypt.hash(this.password, 12);
+//   // Seleting the passwordConfirm field  // we are removing it here becasue its required as an input but then we remove it here :
+//   this.passwordConfirm = undefined;
+
+//   next();
+// });
 
 userSchema.pre('save', function (next) {
   // If we didnt modify the password just dont do anything:
