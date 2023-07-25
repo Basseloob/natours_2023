@@ -39,6 +39,8 @@ const tourSchema = new mongoose.Schema(
       //data validators :
       min: [1, 'Rating must be above 1'],
       max: [5, 'Rating must be below 5'],
+      // THis is SETTER function only run each time the ratingAverage has a new field.
+      set: (val) => Math.round(val * 10) / 10, // 4.66666, 4.6666, 47, 4.7
     },
     ratingQuantity: { type: Number, default: 0 },
     price: { type: Number, required: [true, 'A tour price is required'] },
@@ -103,6 +105,12 @@ const tourSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+// index is for less seraching when querying for a document :
+// tourSchema.index({ price: 1 }); // sorting the price index into ascending order :
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' });
 
 //Virtual property with mongoose :  // In Example : used for not to store data into the DB like for the conversion of speed from Miles into Kilometers.
 tourSchema.virtual('durationWeek').get(function () {
@@ -177,12 +185,12 @@ tourSchema.post(/^find/, function (docsThatReturnedFromTheQuery, next) {
 });
 
 // AGGREGATION MIDDLEWARE :
-tourSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } }); // unshift --> to add the beginning of the array .. Shift() --> removes the first element from an array . push --> will add element to end of array.
+// tourSchema.pre('aggregate', function (next) {
+//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } }); // unshift --> to add the beginning of the array .. Shift() --> removes the first element from an array . push --> will add element to end of array.
 
-  console.log(this.pipeline());
-  next();
-});
+//   console.log(this.pipeline());
+//   next();
+// });
 
 const TourModel = mongoose.model('Tour', tourSchema);
 

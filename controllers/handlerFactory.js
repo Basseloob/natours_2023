@@ -91,6 +91,7 @@ exports.getAll = (Model) =>
       .paginate();
     console.log('req.query =  ', req.query);
 
+    // const getAllDocs = await features.query.explain(); // explain() for indexes :
     const getAllDocs = await features.query;
 
     res.status(200).json({

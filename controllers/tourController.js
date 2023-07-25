@@ -381,6 +381,88 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
   // }
 });
 
+// '/tours-within/:distance/center/:latlng/unit/:unit'
+// '/tours-within/233/center/34.261001,-118.575205/unit/mi'
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  // Destructoring :
+  const { distance, latlng, unit } = req.params;
+  // Destructoring :
+  const [lat, lng] = latlng.split(',');
+
+  // Deviding the distance with radius of the Earth to Mile or Kilometers :
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+  if (!lat || !lng) {
+    next(
+      new AppError(
+        'Please provide latitutr & longtitude in the fromat lat, lng. ',
+        400
+      )
+    );
+  }
+
+  // console.log(distance, lat, lng, unit);
+  // 233 34.261001 -118.575205 mi
+
+  // finding the tours with in the specified Radius :
+  const tours = await TourModel.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
+});
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+  // Destructoring :
+  const { latlng, unit } = req.params;
+  // Destructoring :
+  const [lat, lng] = latlng.split(',');
+
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
+    next(
+      new AppError(
+        'Please provide latitutr & longtitude in the fromat lat, lng. ',
+        400
+      )
+    );
+  }
+
+  const distances = await TourModel.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1],
+        },
+        distanceField: 'distance',
+        // distanceMultiplier: 0.001, // --> as deviding by 1000 to convert distance from Meters to Kilometer
+        distanceMultiplier: multiplier,
+      },
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: distances,
+    },
+  });
+});
+
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////

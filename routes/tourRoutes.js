@@ -32,6 +32,13 @@ router
     tourController.getMonthlyPlan
   );
 
+// Geospatial Queries :
+router
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(tourController.getToursWithin);
+
+router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
+
 // if USER not authenticated it will not get the getALlTours :
 router.route('/').get(tourController.getAllTours).post(
   // tourController.checkBody,

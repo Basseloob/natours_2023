@@ -1,4 +1,5 @@
 // Start the express app :
+const path = require('path');
 const express = require('express');
 const app = express();
 const fs = require('fs');
@@ -16,8 +17,14 @@ const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewsRoute');
 
+// Template Engine :
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views')); // joinnin the directory name to the views behind the scenes :
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 // 1) Global Middle Ware :
+// Serving static files :
+app.use(express.static(path.join(`${__dirname}/public`)));
 
 // Set security HTTP headers :
 app.use(helmet()); // Better been at the first middleware : read helmet documentation --> https://www.udemy.com/course/nodejs-express-mongodb-bootcamp/learn/lecture/15065346#content
@@ -97,6 +104,19 @@ app.use((req, res, next) => {
 //   .get(getTour)
 //   .patch(updateTour)
 //   .delete(deleteTour);
+
+app.get('/', (req, res) => {
+  res.status(200).render('base', {
+    tour: 'The Forest Hiker',
+    user: 'Basil Baragaba',
+  });
+});
+
+app.get('/overview', (req, res) => {
+  res.status(200).render('overview', {
+    title: 'All Tours',
+  });
+});
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
