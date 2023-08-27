@@ -7,6 +7,7 @@ const router = express.Router();
 // create new user :
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
+router.get('/logout', authController.logOut); // we are only getting the cookie = get
 // updating the paswords :
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);

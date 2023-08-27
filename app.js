@@ -9,6 +9,7 @@ const helmet = require('helmet');
 const mongoSanitiz = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -24,6 +25,7 @@ app.set('views', path.join(__dirname, 'views')); // joinnin the directory name t
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // 1) Global Middle Ware :
+
 // Serving static files :
 app.use(express.static(path.join(`${__dirname}/public`)));
 
@@ -50,7 +52,9 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // Body parser - reading data from the body into req.body
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '10kb' })); // 10kb --> is the amount of data that comes in the body... more than 10KB would not work.
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(cookieParser());
 
 // Data sanitization againt NoSQL query injection :     "email":{"$gt":""},
 app.use(mongoSanitiz()); // it will filter out the $ sgins.
@@ -73,7 +77,7 @@ app.use(
 );
 
 // Serving static files :
-app.use(express.static(`${__dirname}/public`)); // serving static files --> http://localhost:3000/overview.html
+// app.use(express.static(`${__dirname}/public`)); // serving static files --> http://localhost:3000/overview.html
 
 // app.use((req, res, next) => {
 //   console.log('Hello from the Global MiddleWare...');
@@ -84,6 +88,7 @@ app.use(express.static(`${__dirname}/public`)); // serving static files --> http
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   console.log('Hello Time of request MiddleWare ', req.requestTime);
+  console.log('The Cookie for the specified request : ', req.cookies);
   // console.log('req.headers = ', req.headers); // access to http headers with express :
   next();
 });

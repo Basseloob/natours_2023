@@ -28,35 +28,73 @@ const handleJWTError = (err) =>
 const handleJWTExpiredError = (err) =>
   new AppError('Your token has expired! Please login again .', 401);
 
-const sendErrorDev = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    err: err,
-    message: err.message,
-    stack: err.stack,
-  });
-};
+const sendErrorDev = (err, req, res) => {
+  // API
 
-const sendErrorPro = (err, res) => {
-  // Operational, trusted error: send message to clinet.
-  if (err.isOperational) {
-    console.log('🔥 This error is for the client !!! , in POSTMAN App .');
-
+  if (req.originalUrl.startsWith('/api')) {
     res.status(err.statusCode).json({
       status: err.status,
+      err: err,
       message: err.message,
+      stack: err.stack,
     });
-
-    // Programming or other unkown error: dont leak error details.
   } else {
-    // 1) Log error :
-    console.error('Unkonw Error 🔥', err);
+    // RENDERD WEBSITE
 
-    // 2) Send general message :
-    res.status(500).json({
-      status: 'error',
-      message: 'Something went very wrong!', // validation error of mongoose will be handled here.
+    res.status(err.statusCode).render('error.pug', {
+      title: 'Something went wrong!',
+      msg: err.message, // error coming from viewController.js
     });
+  }
+};
+
+const sendErrorPro = (err, req, res) => {
+  // A) API
+
+  if (req.originalUrl.startsWith('/api')) {
+    // Operational, trusted error: send message to clinet.
+    if (err.isOperational) {
+      console.log('🔥 This error is for the client !!! , in POSTMAN App .');
+
+      res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+
+      // Programming or other unkown error: dont leak error details.
+    } else {
+      // 1) Log error :
+      console.error('Unkonw Error 🔥', err);
+
+      // 2) Send general message :
+      res.status(500).json({
+        status: 'error',
+        message: 'Something went very wrong!', // validation error of mongoose will be handled here.
+      });
+    }
+  } else {
+    // B) RENDERED WEBSITE :
+
+    // Operational, trusted error: send message to clinet.
+    if (err.isOperational) {
+      console.log('🔥 This error is for the client !!! , in POSTMAN App .');
+
+      res.status(err.statusCode).render('error.pug', {
+        title: 'Something went wrong!',
+        msg: err.message, // error coming from viewController.js
+      });
+
+      // Programming or other unkown error: dont leak error details.
+    } else {
+      // 1) Log error :
+      console.error('Unkonw Error 🔥', err);
+
+      // 2) Send general message :
+      res.status(err.statusCode).render('error.pug', {
+        title: 'Something went wrong!',
+        msg: 'Please try again later.',
+      });
+    }
   }
 };
 
@@ -71,7 +109,7 @@ module.exports = (err, req, res, next) => {
   // console.log('err.statusCode = ', err.statusCode);
 
   if (process.env.NODE_ENV === 'development') {
-    sendErrorDev(err, res);
+    sendErrorDev(err, req, res);
   } else if (process.env.NODE_ENV === 'production') {
     let error = { ...err };
     // let error = Object.create(err);
@@ -82,7 +120,7 @@ module.exports = (err, req, res, next) => {
     if (err.name === 'JsonWebTokenError') error = handleJWTError(err);
     if (err.name === 'TokenExpiredError') error = handleJWTExpiredError(err);
 
-    sendErrorPro(error, res);
+    sendErrorPro(err, req, res);
   }
 
   // res.status(err.statusCode).json({

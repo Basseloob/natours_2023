@@ -42,7 +42,7 @@ const tourSchema = new mongoose.Schema(
       // THis is SETTER function only run each time the ratingAverage has a new field.
       set: (val) => Math.round(val * 10) / 10, // 4.66666, 4.6666, 47, 4.7
     },
-    ratingQuantity: { type: Number, default: 0 },
+    ratingsQuantity: { type: Number, default: 0 },
     price: { type: Number, required: [true, 'A tour price is required'] },
     priceDiscount: {
       type: Number,
@@ -56,7 +56,7 @@ const tourSchema = new mongoose.Schema(
       },
     },
     summary: { type: String, trim: true },
-    descriptioin: { type: String, trim: true },
+    description: { type: String, trim: true },
     imageCover: { type: String, required: [true, 'A tour image is required'] },
     images: [String],
     createdAt: { type: Date, default: Date.now(), select: false },
@@ -85,7 +85,7 @@ const tourSchema = new mongoose.Schema(
         },
         coordinates: [Number],
         address: String,
-        descriptioin: String,
+        description: String,
         day: Number, // The day of the tour will the people will go to.
       },
     ],

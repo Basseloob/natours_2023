@@ -57,18 +57,18 @@ const userSchema = new mongoose.Schema({
 /// password Encrytpion :
 ////////////////////////////////
 
-// // The encryption is between getting the data and saving it into the DB :
-// userSchema.pre('save', async function (next) {
-//   // Only run this function if password was actually modified :
-//   if (!this.isModified('password')) return next();
+// The encryption is between getting the data and saving it into the DB :
+userSchema.pre('save', async function (next) {
+  // Only run this function if password was actually modified :
+  if (!this.isModified('password')) return next();
 
-//   // Encrypting the password with cost of 12 :
-//   this.password = await bcrypt.hash(this.password, 12);
-//   // Seleting the passwordConfirm field  // we are removing it here becasue its required as an input but then we remove it here :
-//   this.passwordConfirm = undefined;
+  // Encrypting the password with cost of 12 :
+  this.password = await bcrypt.hash(this.password, 12);
+  // Seleting the passwordConfirm field  // we are removing it here becasue its required as an input but then we remove it here :
+  this.passwordConfirm = undefined;
 
-//   next();
-// });
+  next();
+});
 
 userSchema.pre('save', function (next) {
   // If we didnt modify the password just dont do anything:

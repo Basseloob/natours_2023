@@ -466,17 +466,5 @@
         "day": 5
       }
     ]
-  },
-  {
-    "_id": "64b64873d654a2949d077941",
-    "name": "Test Tourrrr",
-    "maxGroupSize": 25,
-    "duration": 5,
-    "difficulty": "easy",
-    "price": 400,
-    "summary": "Test",
-    "imageCover": "tour-1-cover.jpg",
-    "secretTour": true,
-    "guides": ["6499bc0db4cf64f149f10444", "64861b3dd4f802ece2e5ca05"]
   }
 ]
