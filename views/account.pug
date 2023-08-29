@@ -80,7 +80,7 @@ block content
                     //- adding '/submit-user-data' in viewRoutes.js
 
                     //- without API :
-                    //- form.form.form-user-data(action='/submit-user-data', method='POST')
+                    //- form.form.form-user-data(action='/submit-user-data', method='POST'  enctype='multipart/form-data')
 
                     //- with API :
                     form.form.form-user-data
@@ -93,7 +93,10 @@ block content
                             input#email.form__input(type='email', value=`${user.email}`, required, name='email')
                         .form__group.form__photo-upload
                             img.form__user-photo(src=`/img/users/${user.photo}`, alt='User photo')
-                            a.btn-text(href='') Choose new photo
+                            //- a.btn-text(href='') Choose new photo
+                            input.form__upload(type='file', accept='image/*', id='photo', name='photo')
+                            label(for='photo') Choose new photo
+                            
                         .form__group.right
                             button.btn.btn--small.btn--green Save settings
                             //- when button get clicked --> all the form user-data will get submitted and the data will be sent using POST request  to this URL: '/submit-user-data'

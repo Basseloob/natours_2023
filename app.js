@@ -87,8 +87,8 @@ app.use(
 // Test middleware :
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  console.log('Hello Time of request MiddleWare ', req.requestTime);
-  console.log('The Cookie for the specified request : ', req.cookies);
+  console.log('Time of request MiddleWare in app.js', req.requestTime);
+  console.log('The Cookie for the specified request is app.js: ', req.cookies);
   // console.log('req.headers = ', req.headers); // access to http headers with express :
   next();
 });

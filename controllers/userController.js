@@ -1,9 +1,57 @@
 const fs = require('fs');
+const sharp = require('sharp');
+const multer = require('multer');
 const userModel = require('../models/userModel');
 const APIFeatures = require('../utils/apiFeatures');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
+
+// storing the file as its in the FS :
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, callbackFn) => {
+//     callbackFn(null, 'public/img/users');
+//   },
+//   filename: (req, file, callbackFn) => {
+//     // user-idnum-2727272727.jpeg  --> to prevent if the same user upload more than one photo no to have the same name :
+//     // 1) Extract the file name from the uploaded file :
+//     const extension = file.mimetype.split('/')[1]; //  mimetype: 'image/jpeg', --> coming from console.log('userController.js updateMe fn : ', req.file);  console.log('userController.js updateMe fn : ', req.body);
+//     callbackFn(null, `user-${req.user.id}-${Date.now()}.${extension}`);
+//   },
+// });
+const multerStorage = multer.memoryStorage(); // this way the image will be stored as a Buffer.
+// Multer Filter :
+const multerFilter = (req, file, callbackFn) => {
+  if (file.mimetype.startsWith('image')) {
+    callbackFn(null, true);
+  } else {
+    callbackFn(
+      new AppError('not an image ! please upload only images', 404),
+      false
+    );
+  }
+};
+// uploading
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+// const upload = multer({ dest: 'public/img/users' });
+exports.uploadUserPhoto = upload.single('photo');
+exports.resizeUserPhoto = (req, res, next) => {
+  if (!req.file) return next();
+
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  // when doing image processing its better to save inot memory not into disk :
+  sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.filename}`); // writing it to a file in the Disk.
+
+  next();
+};
 
 const filterObj = (obj, ...allowedFields) => {
   // 1) loop through the fileds that is in the Obj :
@@ -43,6 +91,9 @@ exports.getMe = (req, res, next) => {
 };
 
 exports.updateMe = catchAsync(async (req, res, next) => {
+  console.log('userController.js updateMe fn : ', req.file);
+  console.log('userController.js updateMe fn : ', req.body);
+
   // 1) Create error if user POSTs password data :
   if (req.body.password || req.body.passwordConfirm)
     return next(
@@ -55,6 +106,9 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   // 2) Filtered out unwanted fieldsNAMES that are not allowed to be updated :
   // Only allow to update the 'name' and 'email' - we don't want to the access to ( body.role: 'admin ) :
   const filteredBody = filterObj(req.body, 'name', 'email');
+
+  // adding the photo if req has file:
+  if (req.file) filteredBody.photo = req.file.filename; // filename coming from --> coming from console.log('userController.js updateMe fn : ', req.file);  console.log('userController.js updateMe fn : ', req.body);
 
   // 3) Update user document :
   const updatedUser = await userModel.findByIdAndUpdate(

@@ -2,6 +2,8 @@ const express = require('express');
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
 
+// the photo is not saved in the DB its just contains the photo link from the File System.
+
 const router = express.Router();
 
 // create new user :
@@ -12,10 +14,8 @@ router.get('/logout', authController.logOut); // we are only getting the cookie 
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
-/////////////////////////////////
 ////////////////////////////////
-router.use(authController.protect); // Anything after this will be protected :::::::::
-////////////////////////////////
+router.use(authController.protect); // Anything after this will be protected :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ////////////////////////////////
 
 router.patch(
@@ -34,6 +34,9 @@ router.get(
 router.patch(
   '/updateMe',
   // authController.protect,
+  // upload.single('photo'),
+  userController.uploadUserPhoto,
+  userController.resizeUserPhoto,
   userController.updateMe
 );
 router.delete(

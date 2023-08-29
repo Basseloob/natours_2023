@@ -40,16 +40,23 @@ if (logOutBtn) logOutBtn.addEventListener('click', logOut);
 if (userDataForm)
   userDataForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    // programatically recreate multipart :
+    const form = new FormData();
+    form.append('name', document.getElementById('name').value);
+    form.append('email', document.getElementById('email').value);
+    form.append('photo', document.getElementById('photo').files[0]);
 
     // 1) Getting the input :
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
+    // const name = document.getElementById('name').value;
+    // const email = document.getElementById('email').value;
 
-    updateSettings({ name, email }, 'data');
+    // updateSettings({ name, email }, 'data');
+    updateSettings(form, 'data');
+    console.log(form);
   });
 
 if (userPasswordForm)
-  userPasswordForm.addEventListener('submit', (e) => {
+  userPasswordForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     // 1) Getting the input :
@@ -57,5 +64,8 @@ if (userPasswordForm)
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
 
-    updateSettings({ passwordCurrent, password, passwordConfirm }, 'password');
+    await updateSettings(
+      { passwordCurrent, password, passwordConfirm },
+      'password'
+    );
   });

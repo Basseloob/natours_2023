@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
     // To use our custome validator :
     validate: [validator.isEmail, 'Please provide a valid email'],
   },
-  photo: String,
+  photo: { type: String, default: 'default.jpg' },
   // Roles fo accessing a protected route :
   role: {
     type: String,
